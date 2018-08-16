@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2017, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
 
 #
@@ -27,10 +27,21 @@ CLEAN_FILES +=			$(PROTO)
 
 RELEASE_TARBALL =		$(NAME)-pkg-$(STAMP).tar.bz2
 
+BASE_IMAGE_UUID = 18b094b0-eb01-11e5-80c1-175dac7ddf02
+BUILDIMAGE_NAME = manta-reshard
+BUILDIMAGE_DESC	= Manta Resharding System
+BUILDIMAGE_PKG	= $(TOP)/$(RELEASE_TARBALL)
+BUILDIMAGE_PKGSRC = coreutils-8.23nb2
+AGENTS		= amon config registrar
 
-include ./tools/mk/Makefile.defs
-include ./tools/mk/Makefile.node_prebuilt.defs
-include ./tools/mk/Makefile.node_modules.defs
+# XXX timf comment out during eng development
+#REQUIRE_ENG := $(shell git submodule update --init deps/eng)
+include ./deps/eng/tools/mk/Makefile.defs
+TOP ?= $(error Unable to access eng.git submodule Makefiles.)
+
+include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
+include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
+include ./deps/eng/tools/mk/Makefile.node_modules.defs
 
 .PHONY: all
 all: $(STAMP_NODE_PREBUILT) $(STAMP_NODE_MODULES)
@@ -101,9 +112,10 @@ INSTALL_DIRS =			$(addprefix $(PROTO), \
 INSTALL_EXEC =			rm -f $@ && cp $< $@ && chmod 755 $@
 INSTALL_FILE =			rm -f $@ && cp $< $@ && chmod 644 $@
 
-
 .PHONY: install
-install: $(INSTALL_FILES)
+install: all $(INSTALL_FILES)
+
+$(SCRIPTS:%=$(PROTO)$(SCRIPTS_DIR)/%): deps/manta-scripts/.git
 
 $(INSTALL_DIRS):
 	mkdir -p $@
@@ -124,10 +136,10 @@ $(PROTO)$(PREFIX)/templates/%: templates/% | $(INSTALL_DIRS)
 	$(INSTALL_FILE)
 
 $(PROTO)$(PREFIX)/node/bin/%: $(STAMP_NODE_PREBUILT) | $(INSTALL_DIRS)
-	rm -f $@ && cp $(NODE_INSTALL)/node/bin/$(@F) $@ && chmod 755 $@
+	rm -f $@ && cp $(NODE_INSTALL)/bin/$(@F) $@ && chmod 755 $@
 
 $(PROTO)$(PREFIX)/node/lib/%: $(STAMP_NODE_PREBUILT) | $(INSTALL_DIRS)
-	rm -f $@ && cp $(NODE_INSTALL)/node/lib/$(@F) $@ && chmod 755 $@
+	rm -f $@ && cp $(NODE_INSTALL)/lib/$(@F) $@ && chmod 755 $@
 
 $(PROTO)$(PREFIX)/cmd/%.js: cmd/%.js | $(INSTALL_DIRS)
 	$(INSTALL_FILE)
@@ -160,7 +172,7 @@ $(PROTO)$(PREFIX)/smf/manifests/%.xml: smf/manifests/%.xml | $(INSTALL_DIRS)
 #
 
 .PHONY: release
-release: install
+release: all install
 	@echo "==> Building $(RELEASE_TARBALL)"
 	cd $(PROTO) && gtar -jcf $(TOP)/$(RELEASE_TARBALL) \
 	    --transform='s,^[^.],root/&,' \
@@ -176,8 +188,8 @@ publish: release
 	mkdir -p $(BITS_DIR)/$(NAME)
 	cp $(RELEASE_TARBALL) $(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
 
-
-include ./tools/mk/Makefile.deps
-include ./tools/mk/Makefile.targ
-include ./tools/mk/Makefile.node_prebuilt.targ
-include ./tools/mk/Makefile.node_modules.targ
+include ./deps/eng/tools/mk/Makefile.deps
+include ./deps/eng/tools/mk/Makefile.targ
+include ./deps/eng/tools/mk/Makefile.node_prebuilt.targ
+include ./deps/eng/tools/mk/Makefile.agent_prebuilt.targ
+include ./deps/eng/tools/mk/Makefile.node_modules.targ
