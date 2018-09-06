@@ -25,7 +25,7 @@ PREFIX =			/opt/smartdc/$(NAME)
 
 CLEAN_FILES +=			$(PROTO)
 
-RELEASE_TARBALL =		$(NAME)-pkg-$(STAMP).tar.bz2
+RELEASE_TARBALL =		$(NAME)-pkg-$(STAMP).tar.gz
 
 BASE_IMAGE_UUID = 18b094b0-eb01-11e5-80c1-175dac7ddf02
 BUILDIMAGE_NAME = manta-reshard
@@ -173,7 +173,7 @@ $(PROTO)$(PREFIX)/smf/manifests/%.xml: smf/manifests/%.xml | $(INSTALL_DIRS)
 .PHONY: release
 release: all install
 	@echo "==> Building $(RELEASE_TARBALL)"
-	cd $(PROTO) && gtar -jcf $(TOP)/$(RELEASE_TARBALL) \
+	cd $(PROTO) && gtar -I pigz -cf $(TOP)/$(RELEASE_TARBALL) \
 	    --transform='s,^[^.],root/&,' \
 	    --owner=0 --group=0 \
 	    opt
