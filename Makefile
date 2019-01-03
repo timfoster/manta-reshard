@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2018, Joyent, Inc.
+# Copyright (c) 2019, Joyent, Inc.
 #
 
 #
@@ -30,7 +30,6 @@ RELEASE_TARBALL =		$(NAME)-pkg-$(STAMP).tar.gz
 BASE_IMAGE_UUID = 18b094b0-eb01-11e5-80c1-175dac7ddf02
 BUILDIMAGE_NAME = manta-reshard
 BUILDIMAGE_DESC	= Manta Resharding System
-BUILDIMAGE_PKG	= $(TOP)/$(RELEASE_TARBALL)
 BUILDIMAGE_PKGSRC = coreutils-8.23nb2
 AGENTS		= amon config registrar
 
