@@ -4,4 +4,4 @@ make_stamps/
 node
 node_modules/
 proto/
-*-pkg-*.tar.bz2
+*-pkg-*.tar.gz
